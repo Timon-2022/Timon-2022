@@ -1,4 +1,4 @@
-- 👋 Hi, I’m @Timon-2022, a graduate from CAU of ME program, and I'm planning to finish my future study in CA, US.
+- 👋 Hi, I’m @Timon-2022, a graduate from CAU of ME program.
 - 👀 I’m interested in Java.
 - 🌱 I’m currently learning android develop.
 - 💞️ I’m looking to collaborate on finding a full time job as a Software Engineer.
