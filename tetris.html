@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>俄罗斯方块</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #1a1a1a 0%, #333 100%);
+            color: white;
+        }
+
+        .game-container {
+            display: none;
+            grid-template-columns: 1fr 200px;
+            gap: 20px;
+        }
+
+        .game-container.active {
+            display: grid;
+        }
+
+        #game-board {
+            width: 300px;
+            height: 600px;
+            border: 2px solid #666;
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(20, 1fr);
+            background-color: #222;
+        }
+
+        .cell {
+            border: 1px solid #333;
+        }
+
+        .info-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .score-container {
+            background: #333;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .next-piece {
+            background: #333;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .next-piece-container {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+        }
+
+        .start-screen {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .start-screen h1 {
+            font-size: 48px;
+            margin-bottom: 30px;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        .start-screen p {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #ccc;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 18px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .piece {
+            background-color: #4CAF50;
+        }
+
+        .piece.I {
+            background-color: #00BCD4;
+        }
+
+        .piece.O {
+            background-color: #FFC107;
+        }
+
+        .piece.T {
+            background-color: #9C27B0;
+        }
+
+        .piece.S {
+            background-color: #4CAF50;
+        }
+
+        .piece.Z {
+            background-color: #F44336;
+        }
+
+        .piece.J {
+            background-color: #2196F3;
+        }
+
+        .piece.L {
+            background-color: #FF9800;
+        }
+    </style>
+</head>
+<body>
+    <div class="start-screen" id="startScreen">
+        <h1>俄罗斯方块</h1>
+        <p>使用方向键控制方块移动和旋转</p>
+        <p>← → 左右移动 | ↑ 旋转 | ↓ 加速下落</p>
+        <button id="startButton">开始游戏</button>
+    </div>
+
+    <div class="game-container" id="gameContainer">
+        <div id="game-board"></div>
+        <div class="info-panel">
+            <div class="score-container">
+                <h2>分数</h2>
+                <p id="score">0</p>
+            </div>
+            <div class="next-piece">
+                <h2>下一个</h2>
+                <div class="next-piece-container" id="nextPiece"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BOARD_WIDTH = 10;
+        const BOARD_HEIGHT = 20;
+        const PIECES = [
+            {
+                shape: [
+                    [1, 1, 1, 1]
+                ],
+                class: 'I'
+            },
+            {
+                shape: [
+                    [1, 1],
+                    [1, 1]
+                ],
+                class: 'O'
+            },
+            {
+                shape: [
+                    [0, 1, 0],
+                    [1, 1, 1]
+                ],
+                class: 'T'
+            },
+            {
+                shape: [
+                    [0, 1, 1],
+                    [1, 1, 0]
+                ],
+                class: 'S'
+            },
+            {
+                shape: [
+                    [1, 1, 0],
+                    [0, 1, 1]
+                ],
+                class: 'Z'
+            },
+            {
+                shape: [
+                    [1, 0, 0],
+                    [1, 1, 1]
+                ],
+                class: 'J'
+            },
+            {
+                shape: [
+                    [0, 0, 1],
+                    [1, 1, 1]
+                ],
+                class: 'L'
+            }
+        ];
+
+        let board = Array(BOARD_HEIGHT).fill().map(() => Array(BOARD_WIDTH).fill(0));
+        let currentPiece = null;
+        let currentPosition = { x: 0, y: 0 };
+        let score = 0;
+        let gameInterval;
+        let gameSpeed = 1000;
+
+        const gameBoard = document.getElementById('game-board');
+        const startScreen = document.getElementById('startScreen');
+        const gameContainer = document.getElementById('gameContainer');
+        const startButton = document.getElementById('startButton');
+        const scoreElement = document.getElementById('score');
+        const nextPieceContainer = document.getElementById('nextPiece');
+
+        function createBoard() {
+            gameBoard.innerHTML = '';
+            for (let y = 0; y < BOARD_HEIGHT; y++) {
+                for (let x = 0; x < BOARD_WIDTH; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.x = x;
+                    cell.dataset.y = y;
+                    gameBoard.appendChild(cell);
+                }
+            }
+        }
+
+        function getRandomPiece() {
+            return PIECES[Math.floor(Math.random() * PIECES.length)];
+        }
+
+        function rotatePiece(piece) {
+            const N = piece.shape.length;
+            const M = piece.shape[0].length;
+            const rotated = Array(M).fill().map(() => Array(N).fill(0));
+            
+            for (let i = 0; i < N; i++) {
+                for (let j = 0; j < M; j++) {
+                    rotated[j][N-1-i] = piece.shape[i][j];
+                }
+            }
+            
+            return {
+                shape: rotated,
+                class: piece.class
+            };
+        }
+
+        function isValidMove(piece, position) {
+            for (let y = 0; y < piece.shape.length; y++) {
+                for (let x = 0; x < piece.shape[y].length; x++) {
+                    if (piece.shape[y][x]) {
+                        const newX = position.x + x;
+                        const newY = position.y + y;
+                        
+                        if (newX < 0 || newX >= BOARD_WIDTH || 
+                            newY >= BOARD_HEIGHT || 
+                            (newY >= 0 && board[newY][newX])) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+
+        function placePiece() {
+            for (let y = 0; y < currentPiece.shape.length; y++) {
+                for (let x = 0; x < currentPiece.shape[y].length; x++) {
+                    if (currentPiece.shape[y][x]) {
+                        const newY = currentPosition.y + y;
+                        if (newY >= 0) {
+                            board[newY][currentPosition.x + x] = currentPiece.class;
+                        }
+                    }
+                }
+            }
+        }
+
+        function clearLines() {
+            let linesCleared = 0;
+            for (let y = BOARD_HEIGHT - 1; y >= 0; y--) {
+                if (board[y].every(cell => cell !== 0)) {
+                    board.splice(y, 1);
+                    board.unshift(Array(BOARD_WIDTH).fill(0));
+                    linesCleared++;
+                    y++;
+                }
+            }
+            if (linesCleared > 0) {
+                score += linesCleared * 100;
+                scoreElement.textContent = score;
+                gameSpeed = Math.max(100, 1000 - (score / 1000) * 100);
+                clearInterval(gameInterval);
+                gameInterval = setInterval(gameLoop, gameSpeed);
+            }
+        }
+
+        function updateBoard() {
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => {
+                const x = parseInt(cell.dataset.x);
+                const y = parseInt(cell.dataset.y);
+                cell.className = 'cell';
+                if (board[y][x]) {
+                    cell.classList.add('piece', board[y][x]);
+                }
+            });
+
+            if (currentPiece) {
+                for (let y = 0; y < currentPiece.shape.length; y++) {
+                    for (let x = 0; x < currentPiece.shape[y].length; x++) {
+                        if (currentPiece.shape[y][x]) {
+                            const newY = currentPosition.y + y;
+                            if (newY >= 0) {
+                                const cell = document.querySelector(`[data-x="${currentPosition.x + x}"][data-y="${newY}"]`);
+                                if (cell) {
+                                    cell.classList.add('piece', currentPiece.class);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        function showNextPiece() {
+            nextPieceContainer.innerHTML = '';
+            const nextPiece = getRandomPiece();
+            for (let y = 0; y < nextPiece.shape.length; y++) {
+                for (let x = 0; x < nextPiece.shape[y].length; x++) {
+                    if (nextPiece.shape[y][x]) {
+                        const cell = document.createElement('div');
+                        cell.classList.add('piece', nextPiece.class);
+                        cell.style.gridColumn = x + 1;
+                        cell.style.gridRow = y + 1;
+                        nextPieceContainer.appendChild(cell);
+                    }
+                }
+            }
+            return nextPiece;
+        }
+
+        function gameLoop() {
+            currentPosition.y++;
+            if (!isValidMove(currentPiece, currentPosition)) {
+                currentPosition.y--;
+                placePiece();
+                clearLines();
+                currentPiece = showNextPiece();
+                currentPosition = { x: Math.floor(BOARD_WIDTH / 2) - 1, y: -2 };
+                
+                if (!isValidMove(currentPiece, currentPosition)) {
+                    clearInterval(gameInterval);
+                    alert(`游戏结束！得分：${score}`);
+                    resetGame();
+                }
+            }
+            updateBoard();
+        }
+
+        function resetGame() {
+            board = Array(BOARD_HEIGHT).fill().map(() => Array(BOARD_WIDTH).fill(0));
+            score = 0;
+            scoreElement.textContent = score;
+            gameSpeed = 1000;
+            createBoard();
+            currentPiece = showNextPiece();
+            currentPosition = { x: Math.floor(BOARD_WIDTH / 2) - 1, y: -2 };
+            gameInterval = setInterval(gameLoop, gameSpeed);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (!currentPiece) return;
+
+            switch (e.key) {
+                case 'ArrowLeft':
+                    currentPosition.x--;
+                    if (!isValidMove(currentPiece, currentPosition)) {
+                        currentPosition.x++;
+                    }
+                    break;
+                case 'ArrowRight':
+                    currentPosition.x++;
+                    if (!isValidMove(currentPiece, currentPosition)) {
+                        currentPosition.x--;
+                    }
+                    break;
+                case 'ArrowDown':
+                    currentPosition.y++;
+                    if (!isValidMove(currentPiece, currentPosition)) {
+                        currentPosition.y--;
+                    }
+                    break;
+                case 'ArrowUp':
+                    const rotated = rotatePiece(currentPiece);
+                    if (isValidMove(rotated, currentPosition)) {
+                        currentPiece = rotated;
+                    }
+                    break;
+            }
+            updateBoard();
+        });
+
+        startButton.addEventListener('click', () => {
+            startScreen.style.display = 'none';
+            gameContainer.classList.add('active');
+            resetGame();
+        });
+
+        createBoard();
+    </script>
+</body>
+</html> 
