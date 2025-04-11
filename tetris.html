@@ -135,6 +135,39 @@
         .piece.L {
             background-color: #FF9800;
         }
+
+        .back-to-home {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+
+        .back-to-home:hover {
+            background: #2980b9;
+        }
+
+        .end-game {
+            position: fixed;
+            bottom: 20px;
+            right: 120px;
+            padding: 10px 20px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .end-game:hover {
+            background: #c0392b;
+        }
     </style>
 </head>
 <body>
@@ -158,6 +191,9 @@
             </div>
         </div>
     </div>
+
+    <a href="index.html" class="back-to-home">返回主页</a>
+    <button class="end-game" id="endGameBtn">结束游戏</button>
 
     <script>
         const BOARD_WIDTH = 10;
@@ -421,6 +457,15 @@
             startScreen.style.display = 'none';
             gameContainer.classList.add('active');
             resetGame();
+        });
+
+        document.getElementById('endGameBtn').addEventListener('click', () => {
+            clearInterval(gameInterval);
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => cell.remove());
+            document.getElementById('score').textContent = '0';
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('endGameBtn').style.display = 'none';
         });
 
         createBoard();
