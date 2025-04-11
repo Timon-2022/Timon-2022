@@ -69,6 +69,7 @@
             grid-template-rows: repeat(20, 1fr);
             gap: 1px;
             padding: 10px;
+            position: relative;
         }
 
         .tetris-cell {
@@ -77,12 +78,9 @@
         }
 
         .tetris-cell.I { background: #00BCD4; }
-        .tetris-cell.O { background: #FFC107; }
-        .tetris-cell.T { background: #9C27B0; }
         .tetris-cell.S { background: #4CAF50; }
-        .tetris-cell.Z { background: #F44336; }
+        .tetris-cell.T { background: #9C27B0; }
         .tetris-cell.J { background: #2196F3; }
-        .tetris-cell.L { background: #FF9800; }
 
         .project-content {
             padding: 20px;
@@ -132,25 +130,29 @@
         <div class="projects-grid">
             <div class="project-card">
                 <div class="tetris-preview">
-                    <div class="tetris-cell I"></div>
-                    <div class="tetris-cell I"></div>
-                    <div class="tetris-cell I"></div>
-                    <div class="tetris-cell I"></div>
-                    <div class="tetris-cell O"></div>
-                    <div class="tetris-cell O"></div>
-                    <div class="tetris-cell O"></div>
-                    <div class="tetris-cell O"></div>
-                    <div class="tetris-cell T"></div>
-                    <div class="tetris-cell T"></div>
-                    <div class="tetris-cell T"></div>
-                    <div class="tetris-cell S"></div>
-                    <div class="tetris-cell S"></div>
-                    <div class="tetris-cell Z"></div>
-                    <div class="tetris-cell Z"></div>
-                    <div class="tetris-cell J"></div>
-                    <div class="tetris-cell J"></div>
-                    <div class="tetris-cell L"></div>
-                    <div class="tetris-cell L"></div>
+                    <!-- I型方块 -->
+                    <div class="tetris-cell I" style="grid-column: 2; grid-row: 2;"></div>
+                    <div class="tetris-cell I" style="grid-column: 2; grid-row: 3;"></div>
+                    <div class="tetris-cell I" style="grid-column: 2; grid-row: 4;"></div>
+                    <div class="tetris-cell I" style="grid-column: 2; grid-row: 5;"></div>
+                    
+                    <!-- S型方块 -->
+                    <div class="tetris-cell S" style="grid-column: 5; grid-row: 2;"></div>
+                    <div class="tetris-cell S" style="grid-column: 6; grid-row: 2;"></div>
+                    <div class="tetris-cell S" style="grid-column: 4; grid-row: 3;"></div>
+                    <div class="tetris-cell S" style="grid-column: 5; grid-row: 3;"></div>
+                    
+                    <!-- T型方块 -->
+                    <div class="tetris-cell T" style="grid-column: 8; grid-row: 2;"></div>
+                    <div class="tetris-cell T" style="grid-column: 7; grid-row: 3;"></div>
+                    <div class="tetris-cell T" style="grid-column: 8; grid-row: 3;"></div>
+                    <div class="tetris-cell T" style="grid-column: 9; grid-row: 3;"></div>
+                    
+                    <!-- J型方块 -->
+                    <div class="tetris-cell J" style="grid-column: 4; grid-row: 5;"></div>
+                    <div class="tetris-cell J" style="grid-column: 4; grid-row: 6;"></div>
+                    <div class="tetris-cell J" style="grid-column: 4; grid-row: 7;"></div>
+                    <div class="tetris-cell J" style="grid-column: 5; grid-row: 7;"></div>
                 </div>
                 <div class="project-content">
                     <h2 class="project-title">俄罗斯方块</h2>
