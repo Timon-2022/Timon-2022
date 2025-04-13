@@ -61,6 +61,34 @@
             text-align: center;
         }
 
+        .controls {
+            background: #333;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .controls h2 {
+            margin-top: 0;
+            color: #fff;
+        }
+
+        .controls p {
+            margin: 10px 0;
+            color: #ccc;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .controls .key {
+            display: inline-block;
+            background: #444;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin: 0 2px;
+            font-family: monospace;
+        }
+
         .next-piece-container {
             width: 100px;
             height: 100px;
@@ -189,6 +217,14 @@
                 <h2>下一个</h2>
                 <div class="next-piece-container" id="nextPiece"></div>
             </div>
+            <div class="controls">
+                <h2>操作说明</h2>
+                <p><span class="key">←</span> <span class="key">→</span> 左右移动</p>
+                <p><span class="key">↑</span> 旋转方块</p>
+                <p><span class="key">↓</span> 加速下落</p>
+                <p>连续消除行数越多，得分越高</p>
+                <p>连击可获得额外分数奖励</p>
+            </div>
         </div>
     </div>
 
@@ -246,13 +282,24 @@
                     [1, 1, 1]
                 ],
                 class: 'L'
+            },
+            {
+                shape: [
+                    [1],
+                    [1],
+                    [1],
+                    [1]
+                ],
+                class: 'I'
             }
         ];
 
         let board = Array(BOARD_HEIGHT).fill().map(() => Array(BOARD_WIDTH).fill(0));
         let currentPiece = null;
+        let nextPiece = null;
         let currentPosition = { x: 0, y: 0 };
         let score = 0;
+        let combo = 0;
         let gameInterval;
         let gameSpeed = 1000;
 
@@ -339,12 +386,78 @@
                 }
             }
             if (linesCleared > 0) {
-                score += linesCleared * 100;
+                // 基础分数：每行100分
+                let baseScore = linesCleared * 100;
+                
+                // 连击奖励：每次连击增加50%
+                let comboBonus = combo * 0.5 * baseScore;
+                
+                // 多行奖励：一次性消除多行有额外奖励
+                let multiLineBonus = 0;
+                if (linesCleared === 2) {
+                    multiLineBonus = 50;
+                } else if (linesCleared === 3) {
+                    multiLineBonus = 150;
+                } else if (linesCleared === 4) {
+                    multiLineBonus = 300;
+                }
+                
+                // 计算总分
+                let totalScore = baseScore + comboBonus + multiLineBonus;
+                score += totalScore;
+                
+                // 更新连击数
+                combo++;
+                
+                // 更新显示
                 scoreElement.textContent = score;
+                
+                // 显示得分动画
+                showScoreAnimation(totalScore, linesCleared);
+                
+                // 调整游戏速度
                 gameSpeed = Math.max(100, 1000 - (score / 1000) * 100);
                 clearInterval(gameInterval);
                 gameInterval = setInterval(gameLoop, gameSpeed);
+            } else {
+                // 如果没有消除行，重置连击
+                combo = 0;
             }
+        }
+
+        function showScoreAnimation(score, lines) {
+            const animation = document.createElement('div');
+            animation.className = 'score-animation';
+            animation.textContent = `${lines}行消除！\n+${Math.floor(score)}分`;
+            animation.style.position = 'absolute';
+            animation.style.left = '50%';
+            animation.style.top = '50%';
+            animation.style.transform = 'translate(-50%, -50%)';
+            animation.style.color = '#fff';
+            animation.style.fontSize = '24px';
+            animation.style.textAlign = 'center';
+            animation.style.textShadow = '0 0 5px rgba(255,255,255,0.5)';
+            animation.style.zIndex = '1000';
+            
+            document.body.appendChild(animation);
+            
+            // 动画效果
+            let opacity = 1;
+            let y = 0;
+            const animate = () => {
+                opacity -= 0.02;
+                y -= 2;
+                animation.style.opacity = opacity;
+                animation.style.transform = `translate(-50%, ${y}px)`;
+                
+                if (opacity > 0) {
+                    requestAnimationFrame(animate);
+                } else {
+                    animation.remove();
+                }
+            };
+            
+            animate();
         }
 
         function updateBoard() {
@@ -377,19 +490,19 @@
 
         function showNextPiece() {
             nextPieceContainer.innerHTML = '';
-            const nextPiece = getRandomPiece();
-            for (let y = 0; y < nextPiece.shape.length; y++) {
-                for (let x = 0; x < nextPiece.shape[y].length; x++) {
-                    if (nextPiece.shape[y][x]) {
+            const piece = getRandomPiece();
+            for (let y = 0; y < piece.shape.length; y++) {
+                for (let x = 0; x < piece.shape[y].length; x++) {
+                    if (piece.shape[y][x]) {
                         const cell = document.createElement('div');
-                        cell.classList.add('piece', nextPiece.class);
+                        cell.classList.add('piece', piece.class);
                         cell.style.gridColumn = x + 1;
                         cell.style.gridRow = y + 1;
                         nextPieceContainer.appendChild(cell);
                     }
                 }
             }
-            return nextPiece;
+            return piece;
         }
 
         function gameLoop() {
@@ -398,7 +511,8 @@
                 currentPosition.y--;
                 placePiece();
                 clearLines();
-                currentPiece = showNextPiece();
+                currentPiece = nextPiece;
+                nextPiece = showNextPiece();
                 currentPosition = { x: Math.floor(BOARD_WIDTH / 2) - 1, y: -2 };
                 
                 if (!isValidMove(currentPiece, currentPosition)) {
@@ -416,7 +530,8 @@
             scoreElement.textContent = score;
             gameSpeed = 1000;
             createBoard();
-            currentPiece = showNextPiece();
+            currentPiece = getRandomPiece();
+            nextPiece = showNextPiece();
             currentPosition = { x: Math.floor(BOARD_WIDTH / 2) - 1, y: -2 };
             gameInterval = setInterval(gameLoop, gameSpeed);
         }
