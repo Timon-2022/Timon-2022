@@ -1,6 +1,6 @@
-- 👋 Hi, I’m @Timon-2022, a graduate from CAU of ME program.
-- 👀 I’m interested in Java.
-- 🌱 I’m currently learning android develop.
+- 👋 Hi, I’m @Timon-2022, an AI PM in edp co.
+- 👀 I’m interested in Swift.
+- 🌱 I’m currently learning ios develop.
 - 📫 How to reach me 
 - Email:timonwanghq@gmail.com
 - If you wanna to have a talk with me, please do not hesitate to contact me.
