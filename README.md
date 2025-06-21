@@ -1,6 +1,6 @@
 - 👋 Hi, I’m @Timon-2022, an AI PM in edp co.
 - 👀 I’m interested in Swift.
-- 🌱 I’m currently learning ios develop.
+- 🌱 I’m currently learning ios dev.
 - 📫 How to reach me 
 - Email:timonwanghq@gmail.com
 - If you wanna to have a talk with me, please do not hesitate to contact me.
